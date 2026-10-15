@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Status das Compras - Estilo Vidros</title>
+  
+  <style>
+    :root {
+      --bg-page: #f2f4f7;
+      --card-bg: #ffffff;
+      --brand-red: #d8222a;
+      --brand-red-hover: #b81b22;
+      --color-aguardando: #c84b12;
+      --color-realizado: #205b92;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --table-header-bg: #f1f5f9;
+      --border-light: #e2e8f0;
+      
+      --urgencia-alta: #d8222a;
+      --urgencia-media: #d97706;
+      --urgencia-baixa: #16a34a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      padding: 32px 40px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* TOP HEADER */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo-box {
+      background-color: var(--brand-red);
+      padding: 6px 12px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(216, 34, 42, 0.25);
+    }
+
+    .logo-box svg {
+      height: 60px;
+      width: auto;
+      display: block;
+    }
+
+    .divider {
+      width: 4px;
+      height: 48px;
+      background-color: var(--brand-red);
+      border-radius: 2px;
+    }
+
+    .title-area {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .subtitle {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--brand-red);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .main-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+    }
+
+    .kpi-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      color: white;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .kpi-badge.aguardando { background-color: var(--color-aguardando); }
+    .kpi-badge.realizado { background-color: var(--color-realizado); }
+
+    .kpi-number {
+      font-size: 1.6rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    /* NAVEGAÇÃO POR ABAS */
+    .tab-navigation {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border-light);
+      padding-bottom: 8px;
+    }
+
+    .tab-btn {
+      background-color: transparent;
+      border: none;
+      padding: 10px 20px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn:hover {
+      background-color: #e2e8f0;
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      background-color: var(--brand-red);
+      color: white;
+      box-shadow: 0 2px 8px rgba(216, 34, 42, 0.3);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* BARRA DE FILTRO */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--card-bg);
+      padding: 12px 20px;
+      border-radius: 10px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      border: 1px solid var(--border-light);
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .filter-group label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .filter-input {
+      width: 100%;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .filter-input:focus {
+      border-color: var(--brand-red);
+    }
+
+    /* CARDS & TABLES */
+    .status-section {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 28px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+
+    .status-section.aguardando-card { border: 2px solid var(--color-aguardando); }
+    .status-section.realizado-card { border: 2px solid var(--color-realizado); }
+
+    .section-header {
+      padding: 12px 24px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-header.aguardando-bg { background-color: var(--color-aguardando); }
+    .section-header.realizado-bg { background-color: var(--color-realizado); }
+
+    .header-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .count-pill {
+      background-color: white;
+      color: #0f172a;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .header-note {
+      font-size: 0.85rem;
+      font-weight: 600;
+      opacity: 0.95;
+    }
+
+    .table-container {
+      max-height: 520px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background-color: var(--table-header-bg);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    td {
+      padding: 14px 24px;
+      font-size: 0.90rem;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-main);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .col-pedido { font-weight: 800; width: 10%; }
+    .col-cliente { font-weight: 500; width: 16%; }
+    .col-entrega { font-weight: 700; width: 18%; }
+    .col-descricao { font-weight: 400; width: 28%; color: #334155; }
+    .col-previsao { font-weight: 700; width: 16%; }
+    .col-requisitante { font-weight: 600; width: 16%; color: #475569; }
+    .col-urgencia { font-weight: 700; width: 12%; text-align: center; }
+
+    .urgency-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .urgency-badge.alta {
+      background-color: #fef2f2;
+      color: var(--urgencia-alta);
+      border: 1px solid #fecaca;
+    }
+
+    .urgency-badge.media {
+      background-color: #fffbe8;
+      color: var(--urgencia-media);
+      border: 1px solid #fde68a;
+    }
+
+    .urgency-badge.baixa {
+      background-color: #f0fdf4;
+      color: var(--urgencia-baixa);
+      border: 1px solid #bbf7d0;
+    }
+
+    .col-entrega.alta { color: var(--urgencia-alta); font-weight: 800; }
+    .col-entrega.media { color: var(--urgencia-media); font-weight: 800; }
+    .col-entrega.baixa { color: var(--urgencia-baixa); font-weight: 700; }
+
+    /* FORMULÁRIO DE REQUISIÇÃO */
+    .form-card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-light);
+      max-width: 800px;
+      margin: 0 auto 28px auto;
+    }
+
+    .form-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .form-group label span.required {
+      color: var(--brand-red);
+    }
+
+    .form-control {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--brand-red);
+      box-shadow: 0 0 0 3px rgba(216, 34, 42, 0.15);
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .btn-submit {
+      background-color: var(--brand-red);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: 800;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .btn-submit:hover {
+      background-color: var(--brand-red-hover);
+    }
+
+    .btn-submit:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .alert-message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .alert-message.success {
+      background-color: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .alert-message.error {
+      background-color: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: white;
+      border-radius: 8px;
+      border: 1px solid var(--border-light);
+      margin-top: 10px;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .status-dot.online { background-color: #10b981; }
+    .status-dot.offline { background-color: var(--brand-red); }
+
+    @media (max-width: 900px) {
+      header { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .header-right { width: 100%; justify-content: space-between; }
+      .filter-bar { flex-direction: column; gap: 12px; align-items: flex-start; }
+      .filter-group { max-width: 100%; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full-width { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- HEADER DA PÁGINA -->
+    <header>
+      <div class="header-left">
+        <div class="logo-box">
+          <svg viewBox="0 0 250 120" xmlns="http://www.w3.org/2000/svg">
+            <rect x="75" y="15" width="45" height="40" fill="none" stroke="#FFFFFF" stroke-width="4.5"/>
+            <line x1="75" y1="35" x2="120" y2="35" stroke="#FFFFFF" stroke-width="3.5"/>
+            <polygon points="102,10 142,10 120,68" fill="#FFFFFF"/>
+            <text x="125" y="102" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="900" fill="#FFFFFF" text-anchor="middle">Estilo Vidros</text>
+          </svg>
+        </div>
+        <div class="divider"></div>
+        <div class="title-area">
+          <span class="subtitle">SETOR DE COMPRAS</span>
+          <h1 class="main-title">Status das compras</h1>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="kpi-badge aguardando">
+          <span class="kpi-number" id="kpi-aguardando-count">0</span>
+          <span>AGUARDANDO</span>
+        </div>
+        <div class="kpi-badge realizado">
+          <span class="kpi-number" id="kpi-realizado-count">0</span>
+          <span>PEDIDO REALIZADO</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- NAVEGAÇÃO DE ABAS -->
+    <div class="tab-navigation">
+      <button class="tab-btn active" onclick="switchTab('tab-status')">
+        📊 Status das Compras
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-requisicao')">
+        📝 Nova Requisição
+      </button>
+    </div>
+
+    <!-- ABA 1: PAINEL DE STATUS DAS COMPRAS -->
+    <div id="tab-status" class="tab-content active">
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label for="search-pedido">🔍 Filtrar Pedido:</label>
+          <input type="text" id="search-pedido" class="filter-input" placeholder="Digite o número do pedido..." oninput="applyFilter()">
+        </div>
+      </div>
+
+      <!-- SECTION 1 (PEDIDO REALIZADO) -->
+      <div class="status-section realizado-card">
+        <div class="section-header realizado-bg">
+          <div class="header-title-group">
+            <span class="header-title">PEDIDO REALIZADO</span>
+            <span class="count-pill" id="pill-realizado">0 compras</span>
+          </div>
+          <span class="header-note">Aguardando chegada do material (Até 20 pedidos)</span>
+        </div>
+        
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 10%;">Nº PEDIDO</th>
+                <th style="width: 16%;">CLIENTE</th>
+                <th style="width: 18%;">ENTREGA DA OBRA</th>
+                <th style="width: 28%;">DESCRIÇÃO</th>
+                <th style="width: 16%;">PREV. RECEBIMENTO</th>
+                <th style="width: 12%; text-align: center;">URGÊNCIA</th>
+              </tr>
+            </thead>
+            <tbody id="table-realizado"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECTION 2 (AGUARDANDO) - REQUISITANTE NO LUGAR DE PREV. RECEBIMENTO -->
+      <div class="status-section aguardando-card">
+        <div class="section-header aguardando-bg">
+          <div class="header-title-group">
+            <span class="header-title">AGUARDANDO</span>
+            <span class="count-pill" id="pill-aguardando">0 compras</span>
+          </div>
+          <span class="header-note">Prioridade: data de entrega mais próxima (Até 20 pedidos)</span>
+        </div>
+        
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 10%;">Nº PEDIDO</th>
+                <th style="width: 16%;">CLIENTE</th>
+                <th style="width: 18%;">ENTREGA DA OBRA</th>
+                <th style="width: 28%;">DESCRIÇÃO</th>
+                <th style="width: 16%;">REQUISITANTE</th>
+                <th style="width: 12%; text-align: center;">URGÊNCIA</th>
+              </tr>
+            </thead>
+            <tbody id="table-aguardando"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA 2: FORMULÁRIO DE NOVA REQUIOSIÇÃO -->
+    <div id="tab-requisicao" class="tab-content">
+      <div class="form-card">
+        <h2 class="form-title">📝 Formulário de Requisição de Compras</h2>
+        <p class="form-subtitle">Preencha os dados abaixo para registrar uma nova solicitação de compra de material.</p>
+
+        <div id="form-alert" class="alert-message"></div>
+
+        <form id="purchase-request-form" onsubmit="submitRequestForm(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="form-pedido">Nº do Pedido <span class="required">*</span></label>
+              <input type="text" id="form-pedido" class="form-control" placeholder="Ex: 1060" required>
+            </div>
+
+            <div class="form-group">
+              <label for="form-cliente">Cliente / Obra <span class="required">*</span></label>
+              <input type="text" id="form-cliente" class="form-control" placeholder="Ex: Cliente Silva - Obra Centro" required>
+            </div>
+
+            <div class="form-group">
+              <label for="form-entrega">Data de Entrega da Obra <span class="required">*</span></label>
+              <input type="date" id="form-entrega" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label for="form-urgencia">Nível de Urgência <span class="required">*</span></label>
+              <select id="form-urgencia" class="form-control" required>
+                <option value="Alta">Alta (Urgente - até 7 dias)</option>
+                <option value="Média" selected>Média (8 a 15 dias)</option>
+                <option value="Baixa">Baixa (Mais de 15 dias)</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="form-descricao">Descrição do Material <span class="required">*</span></label>
+              <textarea id="form-descricao" class="form-control" placeholder="Ex: 4 peças de Vidro Temperado 8mm incolor, 120x200cm..." required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="form-requisitante">Nome do Requisitante <span class="required">*</span></label>
+              <input type="text" id="form-requisitante" class="form-control" placeholder="Ex: João Souza (Setor de Obras)" required>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="form-obs">Observações (OBS)</label>
+              <textarea id="form-obs" class="form-control" placeholder="Ex: Material precisa de entrega fracionada ou detalhes técnicos adicionais..."></textarea>
+            </div>
+          </div>
+
+          <div style="text-align: right; margin-top: 20px;">
+            <button type="submit" id="btn-submit-form" class="btn-submit">
+              <span>🚀 Enviar Requisição</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- BARRA DE STATUS DE CONEXÃO -->
+    <div class="status-bar">
+      <div>
+        <span id="status-dot" class="status-dot offline"></span>
+        <span id="status-text">Conexão à API: Verificando...</span>
+      </div>
+      <div>
+        <button onclick="fetchDataFromAPI()" style="padding: 4px 10px; cursor: pointer; border-radius: 4px; border: 1px solid #cbd5e1; background: #f8fafc; font-size: 0.75rem;">🔄 Atualizar Dados</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const CONFIG = {
+      API_URL: 'https://script.google.com/macros/s/AKfycbwn5ivPh0tFjuIbvTJp_iW9LonB_tkw7xmZBgJItfCkRfadT5wgFXTBsfvRiSCdAMHjNw/exec',
+      REFRESH_INTERVAL_MS: 30000,
+      MAX_ITEMS_PER_SECTION: 20,
+      URGENCY_DAYS: { ALTA: 7, MEDIA: 15 }
+    };
+
+    let rawDataCache = [];
+
+    const initialData = [
+      { pedido: "1042", cliente: "Cliente A", entregaObra: "18/10/2026", descricao: "Vidro temperado 8mm, 4 peças", status: "Aguardando", previsaoRecebimento: "", requisitante: "João Silva", urgencia: "Alta" },
+      { pedido: "1047", cliente: "Cliente B", entregaObra: "22/10/2026", descricao: "Ferragens para box de banheiro", status: "Aguardando", previsaoRecebimento: "", requisitante: "Carlos Obras", urgencia: "Alta" },
+      { pedido: "1051", cliente: "Cliente C", entregaObra: "27/10/2026", descricao: "Espelho bisotado 6mm", status: "Aguardando", previsaoRecebimento: "", requisitante: "Maria Santos", urgencia: "Média" },
+      { pedido: "1053", cliente: "Cliente D", entregaObra: "03/11/2026", descricao: "Guarda-corpo, vidro laminado", status: "Aguardando", previsaoRecebimento: "", requisitante: "Pedro Lima", urgencia: "Baixa" },
+      { pedido: "1036", cliente: "Cliente F", entregaObra: "23/10/2026", descricao: "Perfis de alumínio para janela", status: "Pedido realizado", previsaoRecebimento: "20/10/2026", requisitante: "João Silva", urgencia: "Média" }
+    ];
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      if (tabId === 'tab-status') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('tab-status').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('tab-requisicao').classList.add('active');
+      }
+    }
+
+    function formatDate(val) {
+      if (!val || val === '-' || val === '—' || val === '0' || String(val).trim() === '') return '';
+      const d = new Date(val);
+      if (isNaN(d.getTime())) return String(val);
+      return d.toLocaleDateString('pt-BR');
+    }
+
+    function parseDateToTimestamp(dateStr) {
+      if (!dateStr || dateStr === '—' || dateStr === '-' || dateStr === '') return 8640000000000000;
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+      }
+      const d = new Date(dateStr);
+      return isNaN(d.getTime()) ? 8640000000000000 : d.getTime();
+    }
+
+    function calculateUrgency(urgencySheetVal, entregaObraStr) {
+      if (urgencySheetVal && String(urgencySheetVal).trim() !== '' && String(urgencySheetVal) !== '—') {
+        const clean = String(urgencySheetVal).trim().toLowerCase();
+        if (clean.includes('alta') || clean.includes('critico') || clean.includes('crítico')) return 'Alta';
+        if (clean.includes('media') || clean.includes('média')) return 'Média';
+        if (clean.includes('baixa')) return 'Baixa';
+      }
+
+      if (!entregaObraStr || entregaObraStr === '—' || entregaObraStr === '') return 'Baixa';
+
+      const parts = entregaObraStr.split('/');
+      if (parts.length === 3) {
+        const targetDate = new Date(parts[2], parts[1] - 1, parts[0]);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const diffDays = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+
+        if (diffDays <= CONFIG.URGENCY_DAYS.ALTA) return 'Alta';
+        if (diffDays <= CONFIG.URGENCY_DAYS.MEDIA) return 'Média';
+        return 'Baixa';
+      }
+
+      return 'Baixa';
+    }
+
+    async function fetchDataFromAPI() {
+      const dot = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+
+      try {
+        const response = await fetch(CONFIG.API_URL);
+        if (!response.ok) throw new Error("Status HTTP " + response.status);
+
+        const matrix = await response.json();
+        rawDataCache = parseData(matrix);
+
+        dot.className = "status-dot online";
+        text.innerText = "Conectado à Planilha Google (" + new Date().toLocaleTimeString('pt-BR') + ")";
+
+        applyFilter();
+      } catch (err) {
+        console.warn("API offline ou restrição CORS. Usando dados demonstrativos:", err);
+        dot.className = "status-dot offline";
+        text.innerText = "Modo Demonstrativo (Verifique as permissões do Apps Script)";
+
+        rawDataCache = initialData;
+        applyFilter();
+      }
+    }
+
+    function parseData(matrix) {
+      if (!Array.isArray(matrix) || matrix.length < 2) return initialData;
+
+      const headers = matrix[0].map(h => String(h).trim().toLowerCase());
+      const rows = matrix.slice(1);
+
+      const items = rows.map(row => {
+        const getVal = (keywords) => {
+          const idx = headers.findIndex(h => keywords.some(kw => h.includes(kw)));
+          return idx !== -1 ? row[idx] : null;
+        };
+
+        const statusRaw = String(getVal(['status']) || 'Aguardando').trim();
+        const entregaStr = formatDate(getVal(['entrega', 'obra']));
+        const urgenciaSheet = getVal(['urgência', 'urgencia', 'criticidade', 'prioridade']);
+
+        return {
+          pedido: String(getVal(['pedido', 'nº', 'id']) || ''),
+          cliente: String(getVal(['cliente', 'nome']) || ''),
+          entregaObra: entregaStr,
+          descricao: String(getVal(['descri', 'material', 'item']) || ''),
+          status: statusRaw,
+          previsaoRecebimento: formatDate(getVal(['recebimento', 'previsão'])),
+          requisitante: String(getVal(['requisitante', 'solicitante', 'nome']) || ''),
+          urgencia: calculateUrgency(urgenciaSheet, entregaStr)
+        };
+      });
+
+      return items.length > 0 ? items : initialData;
+    }
+
+    function applyFilter() {
+      const term = document.getElementById('search-pedido').value.trim().toLowerCase();
+
+      let filtered = rawDataCache.filter(item => {
+        if (!term) return true;
+        return item.pedido.toLowerCase().includes(term);
+      });
+
+      filtered.sort((a, b) => parseDateToTimestamp(a.entregaObra) - parseDateToTimestamp(b.entregaObra));
+      renderDashboard(filtered);
+    }
+
+    function renderDashboard(data) {
+      let aguardandoAll = data.filter(i => i.status.toLowerCase().includes('aguardando'));
+      let realizadoAll = data.filter(i => i.status.toLowerCase().includes('realizado'));
+
+      document.getElementById('kpi-aguardando-count').innerText = aguardandoAll.length;
+      document.getElementById('kpi-realizado-count').innerText = realizadoAll.length;
+
+      const maxItems = CONFIG.MAX_ITEMS_PER_SECTION || 20;
+      const aguardandoList = aguardandoAll.slice(0, maxItems);
+      const realizadoList = realizadoAll.slice(0, maxItems);
+
+      document.getElementById('pill-aguardando').innerText = aguardandoList.length + ' compras';
+      document.getElementById('pill-realizado').innerText = realizadoList.length + ' compras';
+
+      // TABELA 1: PEDIDO REALIZADO (Exibe PREV. RECEBIMENTO)
+      const tbodyRealizado = document.getElementById('table-realizado');
+      tbodyRealizado.innerHTML = '';
+      realizadoList.forEach(item => {
+        const tr = document.createElement('tr');
+        const urgClass = item.urgencia.toLowerCase().replace('é', 'e');
+        tr.innerHTML = `
+          <td class="col-pedido">${item.pedido}</td>
+          <td class="col-cliente">${item.cliente}</td>
+          <td class="col-entrega ${urgClass}">${item.entregaObra}</td>
+          <td class="col-descricao">${item.descricao}</td>
+          <td class="col-previsao">${item.previsaoRecebimento}</td>
+          <td class="col-urgencia"><span class="urgency-badge ${urgClass}">${item.urgencia}</span></td>
+        `;
+        tbodyRealizado.appendChild(tr);
+      });
+
+      // TABELA 2: AGUARDANDO (Exibe REQUISITANTE)
+      const tbodyAguardando = document.getElementById('table-aguardando');
+      tbodyAguardando.innerHTML = '';
+      aguardandoList.forEach(item => {
+        const tr = document.createElement('tr');
+        const urgClass = item.urgencia.toLowerCase().replace('é', 'e');
+        tr.innerHTML = `
+          <td class="col-pedido">${item.pedido}</td>
+          <td class="col-cliente">${item.cliente}</td>
+          <td class="col-entrega ${urgClass}">${item.entregaObra}</td>
+          <td class="col-descricao">${item.descricao}</td>
+          <td class="col-requisitante">${item.requisitante}</td>
+          <td class="col-urgencia"><span class="urgency-badge ${urgClass}">${item.urgencia}</span></td>
+        `;
+        tbodyAguardando.appendChild(tr);
+      });
+    }
+
+    async function submitRequestForm(e) {
+      e.preventDefault();
+
+      const btn = document.getElementById('btn-submit-form');
+      const alert = document.getElementById('form-alert');
+
+      const rawDate = document.getElementById('form-entrega').value;
+      let formattedDate = '';
+      if (rawDate) {
+        const parts = rawDate.split('-');
+        if (parts.length === 3) formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+
+      const payload = {
+        pedido: document.getElementById('form-pedido').value.trim(),
+        cliente: document.getElementById('form-cliente').value.trim(),
+        entregaObra: formattedDate,
+        descricao: document.getElementById('form-descricao').value.trim(),
+        urgencia: document.getElementById('form-urgencia').value,
+        requisitante: document.getElementById('form-requisitante').value.trim(),
+        obs: document.getElementById('form-obs').value.trim()
+      };
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ Enviando...</span>';
+      alert.style.display = 'none';
+
+      try {
+        await fetch(CONFIG.API_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        alert.className = 'alert-message success';
+        alert.innerText = '✅ Requisição registrada com sucesso!';
+        alert.style.display = 'block';
+
+        document.getElementById('purchase-request-form').reset();
+        fetchDataFromAPI();
+
+        setTimeout(() => {
+          switchTab('tab-status');
+          alert.style.display = 'none';
+        }, 2000);
+
+      } catch (err) {
+        console.error("Erro ao enviar requisição:", err);
+        alert.className = 'alert-message error';
+        alert.innerText = '⚠️ Erro ao enviar requisição. Verifique a URL do Web App.';
+        alert.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>🚀 Enviar Requisição</span>';
+      }
+    }
+
+    window.onload = () => {
+      fetchDataFromAPI();
+      if (CONFIG.REFRESH_INTERVAL_MS > 0) {
+        setInterval(fetchDataFromAPI, CONFIG.REFRESH_INTERVAL_MS);
+      }
+    };
+  </script>
+</body>
+</html>
