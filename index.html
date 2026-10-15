@@ -568,7 +568,7 @@
         </div>
       </div>
 
-      <!-- SECTION 2 (AGUARDANDO) - REQUISITANTE NO LUGAR DE PREV. RECEBIMENTO -->
+      <!-- SECTION 2 (AGUARDANDO) -->
       <div class="status-section aguardando-card">
         <div class="section-header aguardando-bg">
           <div class="header-title-group">
@@ -659,7 +659,7 @@
     <div class="status-bar">
       <div>
         <span id="status-dot" class="status-dot offline"></span>
-        <span id="status-text">Conexão à API: Verificando...</span>
+        <span id="status-text">Offline - Aguardando conexão...</span>
       </div>
       <div>
         <button onclick="fetchDataFromAPI()" style="padding: 4px 10px; cursor: pointer; border-radius: 4px; border: 1px solid #cbd5e1; background: #f8fafc; font-size: 0.75rem;">🔄 Atualizar Dados</button>
@@ -677,14 +677,6 @@
     };
 
     let rawDataCache = [];
-
-    const initialData = [
-      { pedido: "1042", cliente: "Cliente A", entregaObra: "18/10/2026", descricao: "Vidro temperado 8mm, 4 peças", status: "Aguardando", previsaoRecebimento: "", requisitante: "João Silva", urgencia: "Alta" },
-      { pedido: "1047", cliente: "Cliente B", entregaObra: "22/10/2026", descricao: "Ferragens para box de banheiro", status: "Aguardando", previsaoRecebimento: "", requisitante: "Carlos Obras", urgencia: "Alta" },
-      { pedido: "1051", cliente: "Cliente C", entregaObra: "27/10/2026", descricao: "Espelho bisotado 6mm", status: "Aguardando", previsaoRecebimento: "", requisitante: "Maria Santos", urgencia: "Média" },
-      { pedido: "1053", cliente: "Cliente D", entregaObra: "03/11/2026", descricao: "Guarda-corpo, vidro laminado", status: "Aguardando", previsaoRecebimento: "", requisitante: "Pedro Lima", urgencia: "Baixa" },
-      { pedido: "1036", cliente: "Cliente F", entregaObra: "23/10/2026", descricao: "Perfis de alumínio para janela", status: "Pedido realizado", previsaoRecebimento: "20/10/2026", requisitante: "João Silva", urgencia: "Média" }
-    ];
 
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -758,17 +750,17 @@
 
         applyFilter();
       } catch (err) {
-        console.warn("API offline ou restrição CORS. Usando dados demonstrativos:", err);
+        console.warn("API offline ou aguardando conexão:", err);
         dot.className = "status-dot offline";
-        text.innerText = "Modo Demonstrativo (Verifique as permissões do Apps Script)";
+        text.innerText = "Offline - Aguardando conexão...";
 
-        rawDataCache = initialData;
+        rawDataCache = [];
         applyFilter();
       }
     }
 
     function parseData(matrix) {
-      if (!Array.isArray(matrix) || matrix.length < 2) return initialData;
+      if (!Array.isArray(matrix) || matrix.length < 2) return [];
 
       const headers = matrix[0].map(h => String(h).trim().toLowerCase());
       const rows = matrix.slice(1);
@@ -795,7 +787,7 @@
         };
       });
 
-      return items.length > 0 ? items : initialData;
+      return items;
     }
 
     function applyFilter() {
@@ -806,13 +798,19 @@
         return item.pedido.toLowerCase().includes(term);
       });
 
-      filtered.sort((a, b) => parseDateToTimestamp(a.entregaObra) - parseDateToTimestamp(b.entregaObra));
       renderDashboard(filtered);
     }
 
     function renderDashboard(data) {
       let aguardandoAll = data.filter(i => i.status.toLowerCase().includes('aguardando'));
       let realizadoAll = data.filter(i => i.status.toLowerCase().includes('realizado'));
+
+      // ORDENAÇÃO:
+      // 1. Aguardando: Ordenado por Data de Entrega da Obra (Mais perto -> Mais longe)
+      aguardandoAll.sort((a, b) => parseDateToTimestamp(a.entregaObra) - parseDateToTimestamp(b.entregaObra));
+
+      // 2. Pedido Realizado: Ordenado por Previsão de Recebimento (Mais perto -> Mais longe)
+      realizadoAll.sort((a, b) => parseDateToTimestamp(a.previsaoRecebimento) - parseDateToTimestamp(b.previsaoRecebimento));
 
       document.getElementById('kpi-aguardando-count').innerText = aguardandoAll.length;
       document.getElementById('kpi-realizado-count').innerText = realizadoAll.length;
@@ -824,7 +822,7 @@
       document.getElementById('pill-aguardando').innerText = aguardandoList.length + ' compras';
       document.getElementById('pill-realizado').innerText = realizadoList.length + ' compras';
 
-      // TABELA 1: PEDIDO REALIZADO (Exibe PREV. RECEBIMENTO)
+      // TABELA 1: PEDIDO REALIZADO
       const tbodyRealizado = document.getElementById('table-realizado');
       tbodyRealizado.innerHTML = '';
       realizadoList.forEach(item => {
@@ -841,7 +839,7 @@
         tbodyRealizado.appendChild(tr);
       });
 
-      // TABELA 2: AGUARDANDO (Exibe REQUISITANTE)
+      // TABELA 2: AGUARDANDO
       const tbodyAguardando = document.getElementById('table-aguardando');
       tbodyAguardando.innerHTML = '';
       aguardandoList.forEach(item => {
